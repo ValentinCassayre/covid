@@ -11,6 +11,7 @@ Copyright: (c) Valentin Cassayre (2020)
 import csv
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
+import os
 
 
 # function that convert the file (in csv) into a python list (named data)
@@ -156,11 +157,11 @@ def graph_country(country_data, y1, y2):
         plt.legend(loc='upper left')
         plt.xlabel('Date')
         plt.ylabel('Cases')
-        plt.savefig("{} covid.{}".format(country_data[0][data_dict["CountryExp"]], graph_format), dpi=None,
+        plt.savefig("{}{} covid.{}".format(output_directory, country_data[0][data_dict["CountryExp"]], graph_format), dpi=None,
                     facecolor='w', edgecolor='w', papertype=None, format=graph_format, transparent=False,
                     bbox_inches=None, pad_inches=0.1)
         print("+ {} has been successfully proceed.\n".format(country_data[0][data_dict["CountryExp"]]))
-        plt.close("{} covid.{}".format(country_data[0][data_dict["CountryExp"]], graph_format))
+        plt.close("{}{} covid.{}".format(output_directory, country_data[0][data_dict["CountryExp"]], graph_format))
 
 
 # constants (also used in the functions)
@@ -171,6 +172,8 @@ date_first_case = "31/12/2019"
 # smallest number of cases or report to deal with the country
 cases_min = 10
 daily_report_min = 1
+# output directory
+output_directory = 'out/'
 # format of the graph (png/pdf)
 graph_format = "png"
 # format of the data from different sources
@@ -189,6 +192,10 @@ data_dict = data_dict_ecdc
 data = csv_list(name_file)  # most important list
 c_l_n, country_geold, geold_union = create_country_list(data)
 date_full_list, date_raw_full_list = create_date_list()
+
+# create output directory
+if not os.path.exists(output_directory):
+    os.makedirs(output_directory)
 
 # country = data[country_list_number][data_dict["CountryExp"]]
 # call the main functions
