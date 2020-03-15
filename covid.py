@@ -157,11 +157,31 @@ def graph_country(country_data, y1, y2):
         plt.legend(loc='upper left')
         plt.xlabel('Date')
         plt.ylabel('Cases')
-        plt.savefig("{}{} covid.{}".format(output_directory, country_data[0][data_dict["CountryExp"]], graph_format), dpi=None,
+        country_name = country_data[0][data_dict["CountryExp"]]
+        filename = "{} covid.{}".format(country_name, graph_format)
+        path = "{}{}".format(output_directory, filename)
+        plt.savefig(path, dpi=None,
                     facecolor='w', edgecolor='w', papertype=None, format=graph_format, transparent=False,
                     bbox_inches=None, pad_inches=0.1)
         print("+ {} has been successfully proceed.\n".format(country_data[0][data_dict["CountryExp"]]))
-        plt.close("{}{} covid.{}".format(output_directory, country_data[0][data_dict["CountryExp"]], graph_format))
+        plt.close(path)
+        total_cases = max(y1)
+        return country_name, filename, total_cases
+
+def write_html(figures):
+    def create_image(country, filename):
+        return """<img src="%s" alt="%s" class="col-lg-6 col-md-12"/>""" % (filename, country)
+
+    with open("html/index.html", 'r') as file:
+        template = file.read()
+        images = []
+        for country, filename, _ in figures[:display_top_n]:
+            images.append(create_image(country, filename))
+        result = template.replace("{0}", "\n".join(images))
+
+        output_filename = "%s%s" % (output_directory, "index.html")
+        with open(output_filename, "w") as output:
+            output.write(result)
 
 
 # constants (also used in the functions)
@@ -187,6 +207,9 @@ data_dict_ecdc = \
 # format of the source you chose
 data_dict = data_dict_ecdc
 
+# number of images to display on html page
+display_top_n = 16
+
 # calling the functions
 # calculated with the functions
 data = csv_list(name_file)  # most important list
@@ -200,7 +223,16 @@ if not os.path.exists(output_directory):
 # country = data[country_list_number][data_dict["CountryExp"]]
 # call the main functions
 
+figures = []
+
 for n in c_l_n:
     c_data = create_report_list(data, n)
     c_c_new_conf_cases, c_c_new_deaths, c_new_conf_cases, c_new_deaths = coordinates(c_data, date_raw_full_list)
-    graph_country(c_data, c_c_new_conf_cases, c_c_new_deaths)
+    result = graph_country(c_data, c_c_new_conf_cases, c_c_new_deaths)
+    if result is not None:
+        figures.append(result)
+
+# sort images by descending order of cases
+figures.sort(key=lambda t: -t[2])
+# write html
+write_html(figures)
