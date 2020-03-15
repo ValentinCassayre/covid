@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 
 
-# function that convert the data file (in csv) into a python list (named data)
+# function that convert the file (in csv) into a python list (named data)
 def csv_list(name):
     with open(name, 'r') as file:
         reader = csv.reader(file)
@@ -135,7 +135,7 @@ def graph_country(country_data, y1, y2):
         plt.figure(figsize=(12, 10))
         date_number_list = list(range(len(date_full_list)-1))
         plt.xlim(min(date_number_list), max(date_number_list)+1)
-        plt.ylim(0, 18000)
+        plt.ylim(0, 1.2*max(y1))
         plt.plot(date_full_list, y1, color='#275b69', linestyle='solid', linewidth=4, label='Cumulative cases')
         plt.plot(date_full_list, y2, color='#913232', linestyle='solid', linewidth=4, label='Cumulative deaths')
         plt.axhline(y=max(y1), xmin=0, xmax=1, color='blue', alpha=0.5, linestyle=':', linewidth=1,
@@ -169,7 +169,7 @@ name_file = "covid_data.csv"
 # date of the first case (it will not change)
 date_first_case = "31/12/2019"
 # smallest number of cases or report to deal with the country
-cases_min = 1
+cases_min = 10
 daily_report_min = 1
 # format of the graph (png/pdf)
 graph_format = "png"
