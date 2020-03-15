@@ -43,22 +43,24 @@ def create_date_list():
 
 
 # create list of country
-def create_country_list(data_to_convert):
-    k = len(data_to_convert)
+def create_country_list():
+    k = len(data)
     country_list_number = []
+    country_number_dict = {}
     country_geold_dict = {}
     country_union_dict = {}
     for y in range(k-1):
-        if data_to_convert[y][data_dict["GeoId"]] == \
-                data_to_convert[y + 1][data_dict["GeoId"]] != data_to_convert[y - 1][data_dict["GeoId"]]:
+        if data[y][data_dict["GeoId"]] == \
+                data[y + 1][data_dict["GeoId"]] != data[y - 1][data_dict["GeoId"]]:
             country_list_number.append(y)
+            country_number_dict.update({data[y][data_dict["CountryExp"]]: y})
             country_geold_dict.update(
-                {data_to_convert[y][data_dict["CountryExp"]]: data_to_convert[y][data_dict["GeoId"]]})
-            if data_to_convert[y][data_dict["EU"]] == "EU":
-                country_union_dict.update({data_to_convert[y][data_dict["GeoId"]]: ["EU"]})
+                {data[y][data_dict["CountryExp"]]: data[y][data_dict["GeoId"]]})
+            if data[y][data_dict["EU"]] == "EU":
+                country_union_dict.update({data[y][data_dict["GeoId"]]: ["EU"]})
             else:
-                country_union_dict.update({data_to_convert[y][data_dict["GeoId"]]: "NON-EU"})
-    return country_list_number, country_geold_dict, country_union_dict
+                country_union_dict.update({data[y][data_dict["GeoId"]]: "NON-EU"})
+    return country_list_number, country_number_dict, country_geold_dict, country_union_dict
 
 
 # create a list of the daily reports from a specific country (n = number of one the reports from this country)
@@ -78,7 +80,7 @@ def create_report_list(data_to_convert, report_number):
 
 
 # convert data into lists of coords
-def coordinates(country_data, date_raw_list):
+def coordinates(country_data):
     print("  Analysing the data to create the coordinates of the graph from {}..."
           .format(country_data[0][data_dict["CountryExp"]]))
 
@@ -89,8 +91,8 @@ def coordinates(country_data, date_raw_list):
     country_new_deaths = []
 
     # creating lists for the new confirmed cases and new deaths based on dates and removing missing data (nightmare)
-    while i < len(date_raw_list):
-        if i-pitch < len(country_data) and date_raw_list[i] == country_data[i-pitch][data_dict["DateRep"]]:
+    while i < len(date_raw_full_list):
+        if i-pitch < len(country_data) and date_raw_full_list[i] == country_data[i - pitch][data_dict["DateRep"]]:
             country_new_conf_cases.append(int(country_data[i-pitch][data_dict["NewConfCases"]]))
             country_new_deaths.append(int(country_data[i-pitch][data_dict["NewDeaths"]]))
         else:
@@ -132,7 +134,7 @@ def graph_country(country_data, y1, y2):
     # mat plot lib
     else:
         plt.rcParams.update({'font.size': 15})
-        plt.figure(figsize=(12, 10))
+        plt.figure(figsize=(graph_size[0], graph_size[1]))
         date_number_list = list(range(len(date_full_list)-1))
         plt.xlim(min(date_number_list), max(date_number_list)+1)
         plt.ylim(0, 1.2*max(y1))
@@ -163,6 +165,58 @@ def graph_country(country_data, y1, y2):
         plt.close("{} covid.{}".format(country_data[0][data_dict["CountryExp"]], graph_format))
 
 
+# function that create a graph of 2 country using the data and other functions
+def graph_two_country(country_data1, country_data2):
+    print("  Attempting to create the graph of {} and {}..."
+          .format(country_data1[0][data_dict["CountryExp"]], country_data2[0][data_dict["CountryExp"]]))
+    ya1 = coordinates(country_data1)[0]
+    yb1 = coordinates(country_data1)[1]
+    ya2 = coordinates(country_data2)[0]
+    yb2 = coordinates(country_data2)[1]
+
+    plt.rcParams.update({'font.size': 15})
+    plt.figure(figsize=(graph_size[0], graph_size[1]))
+    date_number_list = list(range(len(date_full_list) - 1))
+    plt.xlim(min(date_number_list), max(date_number_list) + 1)
+    plt.ylim(0, 1.2 * max(ya1 + ya2))
+
+    plt.plot(date_full_list, yb1, color='#843838', linestyle='solid', linewidth=2,
+             label='Cumulative deaths of {}'.format(country_data1[0][data_dict["CountryExp"]]))
+    plt.plot(date_full_list, yb2, color='#b65252', linestyle='solid', linewidth=2,
+             label='Cumulative deaths of {}'.format(country_data2[0][data_dict["CountryExp"]]))
+    plt.plot(date_full_list, ya1, color='#275b69', linestyle='solid', linewidth=4,
+             label='Cumulative cases of {}'.format(country_data1[0][data_dict["CountryExp"]]))
+    plt.plot(date_full_list, ya2, color='#76b652', linestyle='solid', linewidth=4,
+             label='Cumulative cases of {}'.format(country_data2[0][data_dict["CountryExp"]]))
+
+    plt.axhline(y=max(ya1), xmin=0, xmax=1, color='#357b8e', alpha=0.5, linestyle=':', linewidth=1,
+                label='Total cases of {} ({:.0f})'.format(country_data1[0][data_dict["CountryExp"]], max(ya1)))
+    plt.axhline(y=max(ya2), xmin=0, xmax=1, color='#a1cd88', alpha=0.5, linestyle=':', linewidth=1,
+                label='Total cases of {} ({:.0f})'.format(country_data2[0][data_dict["CountryExp"]], max(ya2)))
+
+    if len(date_full_list) > 16:
+        number_date_display = 2
+    else:
+        number_date_display = 1
+    date_disp = [date_full_list[i] for i in range(len(date_full_list)) if (i % number_date_display) == 0]
+    plt.gca().get_xaxis().set_ticklabels(date_disp, fontsize=10, rotation=60)
+    plt.gca().get_xaxis().set_ticks([i for i in range(len(date_full_list)) if i % number_date_display == 0])
+
+    plt.title("Graph of the evolution of the COVID in {} and in {}"
+              .format(country_data1[0][data_dict["CountryExp"]], country_data2[0][data_dict["CountryExp"]]))
+    plt.legend(loc='upper left')
+    plt.xlabel('Date')
+    plt.ylabel('Cases')
+    plt.savefig("Compare {} {} covid.{}".format(country_data1[0][data_dict["CountryExp"]],
+                                                country_data2[0][data_dict["CountryExp"]], graph_format),
+                dpi=None, facecolor='w', edgecolor='w', papertype=None, format=graph_format, transparent=False,
+                bbox_inches=None, pad_inches=0.1)
+    print("+ The graph between {} and {} has been successfully proceed.\n"
+          .format(country_data1[0][data_dict["CountryExp"]], country_data2[0][data_dict["CountryExp"]]))
+    plt.close("Compare {} {} covid.{}".format(country_data1[0][data_dict["CountryExp"]],
+                                              country_data2[0][data_dict["CountryExp"]], graph_format))
+
+
 # constants (also used in the functions)
 # exact name of the data file
 name_file = "covid_data.csv"
@@ -173,6 +227,7 @@ cases_min = 10
 daily_report_min = 1
 # format of the graph (png/pdf)
 graph_format = "png"
+graph_size = [12, 10]
 # format of the data from different sources
 
 data_dict_ecdc = \
@@ -187,13 +242,25 @@ data_dict = data_dict_ecdc
 # calling the functions
 # calculated with the functions
 data = csv_list(name_file)  # most important list
-c_l_n, country_geold, geold_union = create_country_list(data)
+c_l_n, country_number_dict, country_geold, geold_union = create_country_list()
 date_full_list, date_raw_full_list = create_date_list()
 
 # country = data[country_list_number][data_dict["CountryExp"]]
 # call the main functions
 
+# create the graph to compare two country
+graph_two_country(
+    create_report_list(data, int(country_number_dict["Italy"])),
+    create_report_list(data, int(country_number_dict["Germany"])))
+
+graph_two_country(
+    create_report_list(data, int(country_number_dict["Italy"])),
+    create_report_list(data, int(country_number_dict["France"])))
+
+# create the graph of all country
+"""
 for n in c_l_n:
     c_data = create_report_list(data, n)
-    c_c_new_conf_cases, c_c_new_deaths, c_new_conf_cases, c_new_deaths = coordinates(c_data, date_raw_full_list)
+    c_c_new_conf_cases, c_c_new_deaths, c_new_conf_cases, c_new_deaths = coordinates(c_data)
     graph_country(c_data, c_c_new_conf_cases, c_c_new_deaths)
+"""
