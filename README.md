@@ -1,2 +1,3 @@
 # covid
-Python script for stats about the covid19 pandemic
+Python script that display graphs about the covid19 pandemic, made by Valentin Cassayre.
+Data comes from https://www.ecdc.europa.eu/en/publications-data/download-todays-data-geographic-distribution-covid-19-cases-worldwide and is converted to csv before use
