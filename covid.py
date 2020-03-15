@@ -9,24 +9,31 @@ Copyright: (c) Valentin Cassayre (2020)
 """
 
 import csv
+import xlrd
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 import os
 
 
 # function that convert the file (in csv) into a python list (named data)
-def csv_list(name):
-    with open(name, 'r') as file:
-        reader = csv.reader(file)
-        data_list = []
-        for z, row in enumerate(reader):
-            if z == 0:
-                continue
-            else:
-                for i in row:
-                    daily_report = i.split(";")
-                    data_list.append(daily_report)
-        return data_list
+def xls_list(name):
+    book = xlrd.open_workbook(name, encoding_override="cp1251")
+    sheet = book.sheet_by_index(0)
+
+    n_rows = sheet.nrows
+    n_cols = sheet.ncols
+
+    rows = []
+    for i in range(1, n_rows):  # skip header
+        row = []
+        for j in range(n_cols):
+            v = sheet.cell_value(i, j)
+            if j == 0:  # date
+                v = datetime(*xlrd.xldate_as_tuple(v, book.datemode)).strftime('%d/%m/%Y')
+            row.append(v)
+        rows.append(row)
+
+    return rows
 
 
 # create a list of all the dates between first case and now (used for the x-axis)
@@ -186,7 +193,7 @@ def write_html(figures):
 
 # constants (also used in the functions)
 # exact name of the data file
-name_file = "covid_data.csv"
+name_file = "covid_data.xls"
 # date of the first case (it will not change)
 date_first_case = "31/12/2019"
 # smallest number of cases or report to deal with the country
@@ -212,7 +219,7 @@ display_top_n = 16
 
 # calling the functions
 # calculated with the functions
-data = csv_list(name_file)  # most important list
+data = xls_list(name_file)  # most important list
 c_l_n, country_geold, geold_union = create_country_list(data)
 date_full_list, date_raw_full_list = create_date_list()
 
