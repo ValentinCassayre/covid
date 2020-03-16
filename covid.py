@@ -57,17 +57,22 @@ def create_country_list():
     country_number_dict = {}
     country_geold_dict = {}
     country_union_dict = {}
+    z = 0
     for y in range(k-1):
         if data[y][data_dict["GeoId"]] == \
                 data[y + 1][data_dict["GeoId"]] != data[y - 1][data_dict["GeoId"]]:
+            z = y
             country_list_number.append(y)
-            country_number_dict.update({data[y][data_dict["CountryExp"]]: y})
+
             country_geold_dict.update(
                 {data[y][data_dict["CountryExp"]]: data[y][data_dict["GeoId"]]})
             if data[y][data_dict["EU"]] == "EU":
-                country_union_dict.update({data[y][data_dict["GeoId"]]: ["EU"]})
+                country_union_dict.update({data[y][data_dict["CountryExp"]]: "EU"})
             else:
-                country_union_dict.update({data[y][data_dict["GeoId"]]: "NON-EU"})
+                country_union_dict.update({data[y][data_dict["CountryExp"]]: "NON-EU"})
+        elif data[y][data_dict["GeoId"]] != \
+                data[y + 1][data_dict["GeoId"]] != data[y - 1][data_dict["GeoId"]]:
+            country_number_dict.update({data[y][data_dict["CountryExp"]]: [z, y]})
     return country_list_number, country_number_dict, country_geold_dict, country_union_dict
 
 
