@@ -85,8 +85,7 @@ def create_report_list(data_to_convert, report_number):
 
 # convert data into lists of coords
 def coordinates(country_data, date_raw_list):
-    print("  Analysing the data to create the coordinates of the graph from {}..."
-          .format(country_data[0][data_dict["CountryExp"]]))
+    print("  Analysing the data to create the coordinates of the graph from {}...".format(country_name))
 
     # initializing variables
     pitch = 0
@@ -119,13 +118,13 @@ def coordinates(country_data, date_raw_list):
         country_cumulative_new_conf_cases.append(new_conf_cases_value)
         country_cumulative_new_deaths.append(new_deaths_value)
 
-    print("+ Coordinates of the points from {} successfully created !".format(country_data[0][data_dict["CountryExp"]]))
+    print("+ Coordinates of the points from {} successfully created !".format(country_name))
     return country_cumulative_new_conf_cases, country_cumulative_new_deaths, country_new_conf_cases, country_new_deaths
 
 
 # function that create a graph of a country using the data
 def graph_country(country_data, y1, y2):
-    print("  Attempting to create the graph of {}...".format(country_data[0][data_dict["CountryExp"]]))
+    print("  Attempting to create the graph of {}...".format(country_name))
 
     # draw the graph
     # check if country has enough cases and daily reports (you can change the value in constants)
@@ -150,25 +149,28 @@ def graph_country(country_data, y1, y2):
                     label='Total deaths ({:.0f})'.format(max(y2)))
         plt.fill_between(date_full_list, y1, y2, color='0.9')
         plt.fill_between(date_full_list, y2, 0, color='#c24e4e')
-        if len(date_full_list) > 16:
+
+        if len(date_full_list) > 32:
+            number_date_display = 2
+        elif len(date_full_list) > 16:
             number_date_display = 2
         else:
             number_date_display = 1
+
         date_disp = [date_full_list[i] for i in range(len(date_full_list)) if (i % number_date_display) == 0]
         plt.gca().get_xaxis().set_ticklabels(date_disp, fontsize=10, rotation=60)
         plt.gca().get_xaxis().set_ticks([i for i in range(len(date_full_list)) if i % number_date_display == 0])
 
-        country_name = country_data[0][data_dict["CountryExp"]].replace(" ", "_")  # new data base now use _
         plt.title("Graph of the evolution of the COVID in {}".format(country_name))
         plt.legend(loc='upper left')
         plt.xlabel('Date')
         plt.ylabel('Cases')
-        filename = "{}_covid.{}".format(country_name, graph_format)
+        filename = "{}.{}".format(country_name, graph_format)
         path = "{}{}".format(output_directory, filename)
         plt.savefig(path, dpi=None,
                     facecolor='w', edgecolor='w', papertype=None, format=graph_format, transparent=False,
                     bbox_inches=None, pad_inches=0.1)
-        print("+ {} has been successfully proceed.\n".format(country_data[0][data_dict["CountryExp"]]))
+        print("+ {} has been successfully proceed.\n".format(country_name))
         plt.close(path)
         total_cases = max(y1)
         return country_name, filename, total_cases
@@ -215,7 +217,7 @@ data_dict_ecdc = \
 data_dict = data_dict_ecdc
 
 # number of images to display on html page
-display_top_n = 20
+display_top_n = 16
 
 # calling the functions
 # calculated with the functions
@@ -247,6 +249,7 @@ figures = []
 
 for n in c_l_n:
     c_data = create_report_list(data, n)
+    country_name = c_data[0][data_dict["CountryExp"]].replace("_", " ")  # new data base now use _
     c_c_new_conf_cases, c_c_new_deaths, c_new_conf_cases, c_new_deaths = coordinates(c_data, date_raw_full_list)
     result = graph_country(c_data, c_c_new_conf_cases, c_c_new_deaths)
     if result is not None:
