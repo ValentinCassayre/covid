@@ -215,7 +215,7 @@ data_dict_ecdc = \
 data_dict = data_dict_ecdc
 
 # number of images to display on html page
-display_top_n = 16
+display_top_n = 20
 
 # calling the functions
 # calculated with the functions
