@@ -7,7 +7,7 @@ def url_for_date(date):
     return "https://www.ecdc.europa.eu/sites/default/files/documents/COVID-19-geographic-disbtribution-worldwide-%s.xlsx" % date_format
 
 
-output_file = "covid_data.xls"
+output_file = "covid_data.xlsx"
 
 # start from today
 day = datetime.now()

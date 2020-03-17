@@ -1,21 +1,16 @@
 """
-Name: covid
-Description: Script to create graphs about the covid pandemic
-Author: Valentin Cassayre
-Website: https://valentin.cassayre.me
-Email: https://valentin.cassayre.me/contact/
 Created: 09/03/2020
-Copyright: (c) Valentin Cassayre (2020)
+Git: https://github.com/V-def/covid
+Display graphs: https://covid19.cassayre.me/
 """
 
-import csv
 import xlrd
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 import os
 
 
-# function that convert the file (in csv) into a python list (named data)
+# function that convert the file (in xls) into a python list
 def xls_list(name):
     book = xlrd.open_workbook(name, encoding_override="cp1251")
     sheet = book.sheet_by_index(0)
@@ -163,12 +158,12 @@ def graph_country(country_data, y1, y2):
         plt.gca().get_xaxis().set_ticklabels(date_disp, fontsize=10, rotation=60)
         plt.gca().get_xaxis().set_ticks([i for i in range(len(date_full_list)) if i % number_date_display == 0])
 
-        plt.title("Graph of the evolution of the COVID in {}".format(country_data[0][data_dict["CountryExp"]]))
+        country_name = country_data[0][data_dict["CountryExp"]].replace(" ", "_")  # new data base now use _
+        plt.title("Graph of the evolution of the COVID in {}".format(country_name))
         plt.legend(loc='upper left')
         plt.xlabel('Date')
         plt.ylabel('Cases')
-        country_name = country_data[0][data_dict["CountryExp"]]
-        filename = "{} covid.{}".format(country_name, graph_format)
+        filename = "{}_covid.{}".format(country_name, graph_format)
         path = "{}{}".format(output_directory, filename)
         plt.savefig(path, dpi=None,
                     facecolor='w', edgecolor='w', papertype=None, format=graph_format, transparent=False,
@@ -177,6 +172,7 @@ def graph_country(country_data, y1, y2):
         plt.close(path)
         total_cases = max(y1)
         return country_name, filename, total_cases
+
 
 def write_html(figures):
     def create_image(country, filename):
@@ -196,7 +192,7 @@ def write_html(figures):
 
 # constants (also used in the functions)
 # exact name of the data file
-name_file = "covid_data.xls"
+name_file = "covid_data.xlsx"
 # date of the first case (it will not change)
 date_first_case = "31/12/2019"
 # smallest number of cases or report to deal with the country
