@@ -203,7 +203,11 @@ def graph_country(country_data, y1, y2):
         plt.legend(loc='upper left')
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
-        filename = "{}.{}".format(country_name, graph_format)
+
+        if graph_info[graph_dict["Log"]] is True:
+            filename = "{} log.{}".format(country_name, graph_format)
+        else:
+            filename = "{}.{}".format(country_name, graph_format)
         path = "{}{}".format(output_directory, filename)
         plt.savefig(path, dpi=None,
                     facecolor='w', edgecolor='w', papertype=None, format=graph_format, transparent=False,
@@ -299,7 +303,7 @@ def graph_multiple_country(multiple_country_list):
     return multiple_country_str, filename, maxy
 
 
-def write_html(figures):
+def write_html(figures, figures2):
     def create_image(country, filename):
         return """<img src="%s" alt="%s" class="col-lg-6 col-md-12"/>""" % (filename, country)
 
@@ -312,13 +316,13 @@ def write_html(figures):
         country_list = []
         for country, filename, _ in figures[:display_top_n]:
             images.append(create_image(country, filename))
-        for country, _, _ in figures:
-            country_list.append(create_country_choice(country))
+        images.append("<sub>Log graphs</sub>")
+        for country, filename, _ in figures2[:display_top_n]:
+            images.append(create_image(country, filename))
         result_graphs = template.replace("{0}", "\n".join(images))
-        result_country_choice = result_graphs.replace("{1}", "\n".join(country_list))
         output_filename = "%s%s" % (output_directory, "index.html")
         with open(output_filename, "w") as output:
-            output.write(result_country_choice)
+            output.write(result_graphs)
 
 
 # constants (also used in the functions)
@@ -327,14 +331,14 @@ name_file = "covid_data.xls"
 # date of the first case (it will not change)
 date_first_case = "31/12/2019"
 # smallest number of cases or report to deal with the country
-cases_min = 10
-daily_report_min = 1
+cases_min = 100
+daily_report_min = 20
 # output directory
 output_directory = 'out/'
 # format of the graph (png/pdf)
 graph_format = "png"
 graph_size = [12, 10]
-graph_info = [graph_size, True, False, True]
+graph_info = [graph_size, True, True, False]
 log_base = 10
 xlabel = "Date"
 ylabel = "Cases"
@@ -374,7 +378,8 @@ if not os.path.exists(output_directory):
 if graph_info[graph_dict["Log"]] is True:
     ylabel = "Log(Cases)"
 
-figures = []
+figures_normal = []
+figures_log = []
 
 for n in c_l_n:
     c_data = create_report_list(data, n)
@@ -382,7 +387,22 @@ for n in c_l_n:
     c_c_new_conf_cases, c_c_new_deaths, c_new_conf_cases, c_new_deaths = coordinates(c_data)
     result = graph_country(c_data, c_c_new_conf_cases, c_c_new_deaths)
     if result is not None:
-        figures.append(result)
+        figures_normal.append(result)
+
+# sort images by descending order of cases
+figures_normal.sort(key=lambda t: -t[2])
+
+graph_info[graph_dict["Log"]] = True  # Log mode : ON
+
+for n in c_l_n:
+    c_data = create_report_list(data, n)
+    country_name = c_data[0][data_dict["CountryExp"]].replace("_", " ")  # new data base now use _
+    c_c_new_conf_cases, c_c_new_deaths, c_new_conf_cases, c_new_deaths = coordinates(c_data)
+    result = graph_country(c_data, c_c_new_conf_cases, c_c_new_deaths)
+    if result is not None:
+        figures_log.append(result)
+
+figures_log.sort(key=lambda t: -t[2])
 
 """for n in c_l_n:
     c_data = create_report_list(data, n)
@@ -390,7 +410,5 @@ for n in c_l_n:
 
 graph_multiple_country(["China", "Italy", "France", "Germany", "Spain", "Austria"])"""
 
-# sort images by descending order of cases
-figures.sort(key=lambda t: -t[2])
 # write html
-write_html(figures)
+write_html(figures_normal, figures_log)
