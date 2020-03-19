@@ -316,7 +316,7 @@ def write_html(figures, figures2):
         country_list = []
         for country, filename, _ in figures[:display_top_n]:
             images.append(create_image(country, filename))
-        images.append("<sub>Log graphs</sub>")
+        images.append("<center>Log graphs</center>")
         for country, filename, _ in figures2[:display_top_n]:
             images.append(create_image(country, filename))
         result_graphs = template.replace("{0}", "\n".join(images))
