@@ -2,12 +2,14 @@ from datetime import datetime, timedelta
 import urllib.request
 from urllib.error import HTTPError
 
+
 def url_for_date(date):
     date_format = date.strftime("%Y-%m-%d")
-    return "https://www.ecdc.europa.eu/sites/default/files/documents/COVID-19-geographic-disbtribution-worldwide-%s.xlsx" % date_format
+    return "https://www.ecdc.europa.eu/sites/default/files/documents/COVID-19-geographic-disbtribution-worldwide-%s.xls"\
+           % date_format
 
 
-output_file = "covid_data.xlsx"
+output_file = "covid_data.xls"
 
 # start from today
 day = datetime.now()
@@ -34,6 +36,3 @@ if data is not None:
     print("Successfuly wrote file to disk as '%s'" % output_file)
 else:
     print("Error: could not find a suitable file after %s attempts" % trials)
-
-
-

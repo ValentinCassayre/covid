@@ -8,6 +8,7 @@ import xlrd
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 import os
+import math
 
 
 # function that convert the file (in xls) into a python list
@@ -62,6 +63,7 @@ def create_country_list():
         elif data[y][data_dict["GeoId"]] != \
                 data[y + 1][data_dict["GeoId"]] != data[y - 1][data_dict["GeoId"]]:
             country_number_dict.update({data[y][data_dict["CountryExp"]]: [z, y]})
+    country_number_dict.update({data[y][data_dict["CountryExp"]]: [z, y]})
     return country_list_number, country_number_dict, country_geold_dict
 
 
@@ -100,7 +102,7 @@ def coordinates(country_data):
     country_new_deaths = []
 
     # creating lists for the new confirmed cases and new deaths based on dates and removing missing data (nightmare)
-    while i < len(date_raw_full_list):
+    while i < len(date_raw_full_list)+1:
         if i-pitch < len(country_data) and date_raw_full_list[i] == country_data[i - pitch][data_dict["DateRep"]]:
             country_new_conf_cases.append(int(country_data[i-pitch][data_dict["NewConfCases"]]))
             country_new_deaths.append(int(country_data[i-pitch][data_dict["NewDeaths"]]))
@@ -109,6 +111,9 @@ def coordinates(country_data):
             country_new_deaths.append(0)
             pitch = pitch + 1
         i = i + 1
+
+    country_new_conf_cases = country_new_conf_cases[:-1]
+    country_new_deaths = country_new_deaths[:-1]
 
     # initializing other variables
     country_cumulative_new_conf_cases = []
@@ -149,28 +154,37 @@ def coords(country_data):
 # function that create a graph of a country using the data
 def graph_country(country_data, y1, y2):
     print("  Attempting to create the graph of {}...".format(country_name))
+    maxy1 = max(y1)
+    maxy2 = max(y2)
+
+    if graph_info[graph_dict["Log"]] is True:
+        for i in range(len(y1)):
+            if y1[i] > 0:
+                y1[i] = math.log(y1[i], log_base)
+            if y2[i] > 0:
+                y2[i] = math.log(y2[i], log_base)
 
     # draw the graph
     # check if country has enough cases and daily reports (you can change the value in constants)
-    if max(y1) < cases_min:
+    if maxy1 < cases_min:
         print("- Skipping {}, because the country has less than {:.0f} cases ({})\n"
-              .format(country_data[0][data_dict["CountryExp"]], cases_min, max(y1)))
+              .format(country_data[0][data_dict["CountryExp"]], cases_min, maxy1))
     elif len(date_full_list) < daily_report_min:
         print("- Skipping {}, because the country has less than {:.0f} daily reports ({:.0f})\n"
               .format(country_data[0][data_dict["CountryExp"]], daily_report_min, len(date_full_list)))
     # mat plot lib
     else:
         plt.rcParams.update({'font.size': 15})
-        plt.figure(figsize=(12, 10))
+        plt.figure(figsize=(graph_size[0], graph_size[1]))
         date_number_list = list(range(len(date_full_list) - 1))
         plt.xlim(min(date_number_list), max(date_number_list)+1)
-        plt.ylim(0, 1.2*max(y1))
+        plt.ylim(0, 1.2*max(y1+y2))
         plt.plot(date_full_list, y1, color='#275b69', linestyle='solid', linewidth=4, label='Cumulative cases')
         plt.plot(date_full_list, y2, color='#913232', linestyle='solid', linewidth=4, label='Cumulative deaths')
         plt.axhline(y=max(y1), xmin=0, xmax=1, color='blue', alpha=0.5, linestyle=':', linewidth=1,
-                    label='Total cases ({:.0f})'.format(max(y1)))
+                    label='Total cases ({:.0f})'.format(maxy1))
         plt.axhline(y=max(y2), xmin=0, xmax=1, color='red', alpha=0.5, linestyle=':', linewidth=1,
-                    label='Total deaths ({:.0f})'.format(max(y2)))
+                    label='Total deaths ({:.0f})'.format(maxy2))
         plt.fill_between(date_full_list, y1, y2, color='0.9')
         plt.fill_between(date_full_list, y2, 0, color='#c24e4e')
 
@@ -187,8 +201,8 @@ def graph_country(country_data, y1, y2):
 
         plt.title("Graph of the evolution of the COVID in {}".format(country_name))
         plt.legend(loc='upper left')
-        plt.xlabel('Date')
-        plt.ylabel('Cases')
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
         filename = "{}.{}".format(country_name, graph_format)
         path = "{}{}".format(output_directory, filename)
         plt.savefig(path, dpi=None,
@@ -209,7 +223,6 @@ def graph_multiple_country(multiple_country_list):
         multiple_country_str = multiple_country_str + " " + country
     multiple_country_str = multiple_country_str[1:]
     print("  Attempting to create the graph of {}...".format(multiple_country_str))
-
     # get a list with all the data needed for the different country
     country_list_range = create_multiple_country_list(multiple_country_list)
     for country_range in country_list_range:
@@ -222,7 +235,7 @@ def graph_multiple_country(multiple_country_list):
 
     # mat plot lib stuff
     plt.rcParams.update({'font.size': 15})
-    plt.figure(figsize=(12, 10))
+    plt.figure(figsize=(graph_size[0], graph_size[1]))
     date_number_list = list(range(len(date_full_list) - 1))
     plt.xlim(min(date_number_list), max(date_number_list) + 1)
     plt.ylim(0, 1.2 * maxy)
@@ -231,12 +244,34 @@ def graph_multiple_country(multiple_country_list):
         # get the list of the coordinates
         y1, y2, y3, y4 = coordinates(country_data)
         country_name = country_data[0][data_dict["CountryExp"]].replace("_", " ")
+        maxy1 = max(y1)
+        maxy2 = max(y2)
+
+        if graph_info[graph_dict["Log"]] is True:
+            for i in range(len(y1)):
+                if y1[i] > 0:
+                    y1[i] = math.log(y1[i], log_base)
+                if y2[i] > 0:
+                    y2[i] = math.log(y2[i], log_base)
 
         # draw the graph
-        plt.plot(date_full_list, y1, linestyle='solid', linewidth=4,
-                 label='Cumulative cases of {} ({:.0f})'.format(country_name, max(y1)))
-        plt.plot(date_full_list, y2, linestyle='solid', linewidth=4,
-                 label='Cumulative deaths of {} ({:.0f})'.format(country_name, max(y2)))
+        if len(multiple_country_list) == 1:  # only one country graph
+            plt.plot(date_full_list, y1, color='#275b69', linestyle='solid', linewidth=4, label='Cumulative cases')
+            plt.plot(date_full_list, y2, color='#913232', linestyle='solid', linewidth=4, label='Cumulative deaths')
+            plt.axhline(y=max(y1), xmin=0, xmax=1, color='blue', alpha=0.5, linestyle=':', linewidth=1,
+                        label='Total cases ({:.0f})'.format(maxy1))
+            plt.axhline(y=max(y2), xmin=0, xmax=1, color='red', alpha=0.5, linestyle=':', linewidth=1,
+                        label='Total deaths ({:.0f})'.format(maxy2))
+            plt.fill_between(date_full_list, y1, y2, color='0.9')
+            plt.fill_between(date_full_list, y2, 0, color='#c24e4e')
+
+        elif graph_info[graph_dict["Cases"]] is True:
+            plt.plot(date_full_list, y1, linestyle='solid', linewidth=4,
+                     label='Cumulative cases of {} ({:.0f})'.format(country_name, maxy1))
+
+        elif graph_info[graph_dict["Deaths"]] is True:
+            plt.plot(date_full_list, y2, linestyle='solid', linewidth=4,
+                     label='Cumulative deaths of {} ({:.0f})'.format(country_name, maxy2))
 
     if len(date_full_list) > 32:
         number_date_display = 2
@@ -251,9 +286,10 @@ def graph_multiple_country(multiple_country_list):
 
     plt.title("Graph of the evolution of the COVID in {}".format(multiple_country_str))
     plt.legend(loc='upper left')
-    plt.xlabel('Date')
-    plt.ylabel('Cases')
-    filename = "{}.{}".format(multiple_country_str, graph_format)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    # filename = "{}.{}".format(multiple_country_str, graph_format)
+    filename = "Multiple_country_graph.{}".format(graph_format)
     path = "{}{}".format(output_directory, filename)
     plt.savefig(path, dpi=None,
                 facecolor='w', edgecolor='w', papertype=None, format=graph_format, transparent=False,
@@ -267,21 +303,27 @@ def write_html(figures):
     def create_image(country, filename):
         return """<img src="%s" alt="%s" class="col-lg-6 col-md-12"/>""" % (filename, country)
 
+    def create_country_choice(country):
+        return  """ <option value="%s">%s</option>"""% (country, country)
+
     with open("html/index.html", 'r') as file:
         template = file.read()
         images = []
+        country_list = []
         for country, filename, _ in figures[:display_top_n]:
             images.append(create_image(country, filename))
-        result = template.replace("{0}", "\n".join(images))
-
+        for country, _, _ in figures:
+            country_list.append(create_country_choice(country))
+        result_graphs = template.replace("{0}", "\n".join(images))
+        result_country_choice = result_graphs.replace("{1}", "\n".join(country_list))
         output_filename = "%s%s" % (output_directory, "index.html")
         with open(output_filename, "w") as output:
-            output.write(result)
+            output.write(result_country_choice)
 
 
 # constants (also used in the functions)
 # exact name of the data file
-name_file = "covid_data.xlsx"
+name_file = "covid_data.xls"
 # date of the first case (it will not change)
 date_first_case = "31/12/2019"
 # smallest number of cases or report to deal with the country
@@ -292,12 +334,19 @@ output_directory = 'out/'
 # format of the graph (png/pdf)
 graph_format = "png"
 graph_size = [12, 10]
+graph_info = [graph_size, True, False, True]
+log_base = 10
+xlabel = "Date"
+ylabel = "Cases"
+
 # format of the data from different sources
 
 data_dict_ecdc = \
     {"DateRep": 0, "NewConfCases": 4, "NewDeaths": 5, "CountryExp": 6, "GeoId": 7}
 # https://www.ecdc.europa.eu/en/publications-data/download-todays-data-geographic-distribution-covid-19-cases-worldwide
 
+graph_dict = \
+    {"Size": 0, "Cases": 1, "Deaths": 2, "Log": 3}
 # other sources coming soon
 
 # format of the source you chose
@@ -322,6 +371,9 @@ if not os.path.exists(output_directory):
 # create the graph of all country
 # graph_multiple_country(["France", "Germany", "Italy"])
 
+if graph_info[graph_dict["Log"]] is True:
+    ylabel = "Log(Cases)"
+
 figures = []
 
 for n in c_l_n:
@@ -331,6 +383,12 @@ for n in c_l_n:
     result = graph_country(c_data, c_c_new_conf_cases, c_c_new_deaths)
     if result is not None:
         figures.append(result)
+
+"""for n in c_l_n:
+    c_data = create_report_list(data, n)
+    country_name = c_data[0][data_dict["CountryExp"]]
+
+graph_multiple_country(["China", "Italy", "France", "Germany", "Spain", "Austria"])"""
 
 # sort images by descending order of cases
 figures.sort(key=lambda t: -t[2])
