@@ -158,6 +158,9 @@ def graph_country(country_data, y1, y2):
     maxy2 = max(y2)
 
     if graph_info[graph_dict["Log"]] is True:
+        ylabel = "Log(Cases)"
+
+    if graph_info[graph_dict["Log"]] is True:
         for i in range(len(y1)):
             if y1[i] > 0:
                 y1[i] = math.log(y1[i], log_base)
@@ -316,7 +319,6 @@ def write_html(figures, figures2):
         country_list = []
         for country, filename, _ in figures[:display_top_n]:
             images.append(create_image(country, filename))
-        images.append("<center>Log graphs</center>")
         for country, filename, _ in figures2[:display_top_n]:
             images.append(create_image(country, filename))
         result_graphs = template.replace("{0}", "\n".join(images))
@@ -344,7 +346,6 @@ xlabel = "Date"
 ylabel = "Cases"
 
 # format of the data from different sources
-
 data_dict_ecdc = \
     {"DateRep": 0, "NewConfCases": 4, "NewDeaths": 5, "CountryExp": 6, "GeoId": 7}
 # https://www.ecdc.europa.eu/en/publications-data/download-todays-data-geographic-distribution-covid-19-cases-worldwide
@@ -374,9 +375,6 @@ if not os.path.exists(output_directory):
 
 # create the graph of all country
 # graph_multiple_country(["France", "Germany", "Italy"])
-
-if graph_info[graph_dict["Log"]] is True:
-    ylabel = "Log(Cases)"
 
 figures_normal = []
 figures_log = []
