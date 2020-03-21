@@ -5,8 +5,7 @@ from urllib.error import HTTPError
 
 def url_for_date(date):
     date_format = date.strftime("%Y-%m-%d")
-    return "https://www.ecdc.europa.eu/sites/default/files/documents/COVID-19-geographic-disbtribution-worldwide-%s.xls"\
-           % date_format
+    return "https://www.ecdc.europa.eu/sites/default/files/documents/COVID-19-geographic-disbtribution-worldwide-%s.xlsx" % date_format
 
 
 output_file = "covid_data.xls"
