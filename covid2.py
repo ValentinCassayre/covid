@@ -6,6 +6,8 @@ import matplotlib.patheffects
 import matplotlib
 from adjustText import adjust_text
 
+output_directory = 'out/'
+output_plotname = 'trajectories.png'
 filename = 'covid_data.xls'
 start_at = 100  # Start value of y-axis
 cases_treshold = start_at  # Minimum number of cases to include country
@@ -131,8 +133,18 @@ plt.yticks(ticks)
 
 adjust_text(texts)
 
-plt.xlabel("Number of days since the %sth cases" % start_at)
+plt.xlabel("Number of days since the %sth case" % start_at)
 
-plt.title("Cumulative number of cases per country on a daily basis since %sth case" % start_at)
+plt.title("Cumulative number of cases per country on a daily basis since the %sth case" % start_at)
 
-plt.show()
+plt.savefig(output_directory + output_plotname)
+
+# --
+
+with open("html/index.html", 'r') as file:
+    template = file.read()
+    image = """<img src="%s" alt="Trajectories by country" class="col-12"/>""" % output_plotname
+    result_graphs = template.replace("{0}", image)
+    output_filename = "%s%s" % (output_directory, "index.html")
+    with open(output_filename, "w") as output:
+        output.write(result_graphs)
