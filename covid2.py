@@ -51,6 +51,8 @@ def get_color(country):
         return "#96a61b"
     elif country == "Switzerland":
         return "#d65e84"
+    elif country == "Netherlands":
+        return "#fc9803"
     else:
         return None
 
@@ -60,6 +62,8 @@ def draw_trajectories(filename, variable, start_at, highlight_threshold, variabl
     def cumsum(country):
         data = df[df.country == country].copy().set_index('date')[[variable]].cumsum()
         data = data[data[variable] >= start_at]  # Normalize starting point
+        first = data.iloc[0][variable]
+        data[variable] = data[variable] - first + start_at
         data = data.reset_index()
 
         return data
@@ -149,8 +153,8 @@ countries_of_interest_cases = stats_countries_only[stats_countries_only.cases > 
 countries_of_interest_deaths = stats_countries_only[stats_countries_only.deaths > deaths_treshold].deaths.sort_values().index.tolist()
 
 
-draw_trajectories(output_cases, 'cases', start_at_cases, 10, 'case', countries_of_interest_cases)
-draw_trajectories(output_deaths, 'deaths', start_at_deaths, 3, 'death', countries_of_interest_deaths)
+draw_trajectories(output_cases, 'cases', start_at_cases, 14, 'case', countries_of_interest_cases)
+draw_trajectories(output_deaths, 'deaths', start_at_deaths, 7, 'death', countries_of_interest_deaths)
 
 # --
 
