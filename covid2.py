@@ -74,7 +74,7 @@ def draw_trajectories(filename, variable, start_at, highlight_threshold, variabl
 
     matplotlib.rcParams['figure.dpi'] = 300
 
-    fig, ax = plt.subplots(figsize=(10, 5))
+    fig, ax = plt.subplots(figsize=(10, 6))
 
     ax.set_yscale('log')  # Log scale
 
