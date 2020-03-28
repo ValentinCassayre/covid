@@ -17,7 +17,7 @@ start_at_deaths = 10
 cases_treshold = start_at_cases  # Minimum number of cases to include country
 deaths_treshold = start_at_deaths
 
-names = {'DateRep': 'date', 'Cases': 'cases', 'Deaths': 'deaths', 'Countries and territories': 'country', 'GeoId': 'geoid'}
+names = {'dateRep': 'date', 'cases': 'cases', 'deaths': 'deaths', 'countriesAndTerritories': 'country', 'geoId': 'geoid'}
 
 df = pd.read_excel(source_filename)
 df = df.drop(columns=list(set(df.columns.tolist()) - names.keys()))  # Drop unnecessary columns for convenience
