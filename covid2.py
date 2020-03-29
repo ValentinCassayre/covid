@@ -12,8 +12,8 @@ output_directory = 'out/'
 output_cases = 'trajectories_cases.png'
 output_deaths = 'trajectories_deaths.png'
 source_filename = 'covid_data.xls'
-start_at_cases = 100  # Start value of y-axis
-start_at_deaths = 10
+start_at_cases = 250  # Start value of y-axis
+start_at_deaths = 25
 cases_treshold = start_at_cases  # Minimum number of cases to include country
 deaths_treshold = start_at_deaths
 
@@ -153,8 +153,8 @@ countries_of_interest_cases = stats_countries_only[stats_countries_only.cases > 
 countries_of_interest_deaths = stats_countries_only[stats_countries_only.deaths > deaths_treshold].deaths.sort_values().index.tolist()
 
 
-draw_trajectories(output_cases, 'cases', start_at_cases, 14, 'case', countries_of_interest_cases)
-draw_trajectories(output_deaths, 'deaths', start_at_deaths, 7, 'death', countries_of_interest_deaths)
+draw_trajectories(output_cases, 'cases', start_at_cases, 12, 'case', countries_of_interest_cases)
+draw_trajectories(output_deaths, 'deaths', start_at_deaths, 9, 'death', countries_of_interest_deaths)
 
 # --
 
