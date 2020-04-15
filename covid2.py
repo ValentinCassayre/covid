@@ -104,7 +104,7 @@ def draw_trajectories(filename, variable, start_at, highlight_threshold, variabl
         marker_size_last = marker_size * 2
         marker_edge_last = 0.5
 
-        [p] = plt.plot(to_plot, marker=marker_kind, markersize=marker_size, color=color, linewidth=line_width)
+        [p] = plt.plot(to_plot, marker=None, markersize=marker_size, color=color, linewidth=line_width)
         color = p.get_color()
 
         last = to_plot.tail(1)
@@ -153,8 +153,8 @@ countries_of_interest_cases = stats_countries_only[stats_countries_only.cases > 
 countries_of_interest_deaths = stats_countries_only[stats_countries_only.deaths > deaths_treshold].deaths.sort_values().index.tolist()
 
 
-draw_trajectories(output_cases, 'cases', start_at_cases, 12, 'case', countries_of_interest_cases)
-draw_trajectories(output_deaths, 'deaths', start_at_deaths, 9, 'death', countries_of_interest_deaths)
+draw_trajectories(output_cases, 'cases', start_at_cases, 35, 'case', countries_of_interest_cases)
+draw_trajectories(output_deaths, 'deaths', start_at_deaths, 23, 'death', countries_of_interest_deaths)
 
 # --
 
