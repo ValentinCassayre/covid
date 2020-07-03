@@ -114,7 +114,7 @@ def draw_trajectories(filename, variable, start_at, highlight_threshold, variabl
             last_pos = last.reset_index().to_numpy()[0]
             display = "%s (after %s days)" % (country_display, max_period - 1) if country == 'China' else country_display
             text = ax.annotate(display, (last_pos[0] + 0.3, last_pos[1]),
-                               size=8, color=color, weight=font_weight,
+                               size=6, color=color, weight=font_weight,
                                path_effects=[matplotlib.patheffects.withStroke(linewidth=1, foreground="white")])
             texts.append(text)
 
@@ -138,7 +138,7 @@ def draw_trajectories(filename, variable, start_at, highlight_threshold, variabl
     ax.yaxis.set_major_formatter(FuncFormatter(lambda x, _: '{:,}'.format(x)))
     plt.yticks(ticks)
 
-    adjust_text(texts)
+    adjust_text(texts, lim=200)
 
     plt.xlabel("Number of days since the %sth %s" % (start_at, variable_display))
 
@@ -152,9 +152,11 @@ stats_countries_only = stats_per_country[~stats_per_country.index.str.contains('
 countries_of_interest_cases = stats_countries_only[stats_countries_only.cases > cases_treshold].cases.sort_values().index.tolist()
 countries_of_interest_deaths = stats_countries_only[stats_countries_only.deaths > deaths_treshold].deaths.sort_values().index.tolist()
 
+reference_date = date(2020, 3, 21)
+delta_days = (date.today() - reference_date).days
 
-draw_trajectories(output_cases, 'cases', start_at_cases, 35, 'case', countries_of_interest_cases)
-draw_trajectories(output_deaths, 'deaths', start_at_deaths, 23, 'death', countries_of_interest_deaths)
+draw_trajectories(output_cases, 'cases', start_at_cases, delta_days, 'case', countries_of_interest_cases)
+draw_trajectories(output_deaths, 'deaths', start_at_deaths, delta_days - 10, 'death', countries_of_interest_deaths)
 
 # --
 
